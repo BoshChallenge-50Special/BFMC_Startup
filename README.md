@@ -16,6 +16,7 @@
 10. Hope it worked or cry...
 
 **CAMERA**
+
 8. Instal OpenCV on your Computer
   -  Linux: `sudo apt-get install python3-opencv`
   - ...Please add other ways for other operating system
