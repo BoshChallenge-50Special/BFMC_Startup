@@ -17,9 +17,9 @@
 
 **CAMERA**
 
-8. Instal OpenCV on your Computer
-  -  Linux: `sudo apt-get install python3-opencv`
-  - ...Please add other ways for other operating system
+8. Instal OpenCV on your Computer 
+    -  Linux: `sudo apt-get install python3-opencv`
+    - ...Please add other ways for other operating system
 9. In the **Raspberry** gp on `src/utils/camerastreamer/camerastreamer.py` from you computer and change `self.serverIp  = '*.*.*.*'` by putting the address of the **computer** instead of `*.*.*.*`. You can edit the file simply with `nano`.
 10. On your computer `python3 -m bin.camerareceiver`
 
