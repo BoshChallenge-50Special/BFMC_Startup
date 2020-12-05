@@ -1,3 +1,14 @@
+# INSTALL GUIDE
+
+## CAMERA
+
+## CONTROL FROM COMPUTER
+
+
+
+
+
+
 # BFMC - Start-up ptoject
 
 This repository represents a tool which shows you how to start-up your car easier and use some of the already developed functionalities of the car. In this project the following functionalities are implemented by using Python3.7:
