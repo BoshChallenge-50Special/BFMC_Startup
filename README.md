@@ -1,15 +1,25 @@
 # INSTALL GUIDE
 
-## CAMERA
+1. Clone this repository on your computer
+2. Move in the folder project
+3. `pip3 install -r requirements_remote.txt`
+4. Connect Raspberry(to set wi-fi ssid and psw on Raspberry use `sudo raspi-config`) and Computer to the same network. 
 
-## CONTROL FROM COMPUTER
+**CONTROL**
+
+4. Go on `src/utils/remotecontrol/remotecontroltransmitter.py` from you computer and change `self.serverIp  = '*.*.*.*'` by putting the address of the Raspberry instead of `*.*.*.*`
+5. `python3 -m bin.remotecontroltransmitter`
+6. Hope it worked or cry...
+
+**CAMERA**
 
 
 
 
 
 
-# BFMC - Start-up ptoject
+
+# BFMC - Start-up ptoject- Bull
 
 This repository represents a tool which shows you how to start-up your car easier and use some of the already developed functionalities of the car. In this project the following functionalities are implemented by using Python3.7:
   - a simple multithread/multiprocess architecture 
