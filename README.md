@@ -1,18 +1,26 @@
 # INSTALL GUIDE
 
-1. Clone this repository on your computer
-2. Move in the folder project
-3. `pip3 install -r requirements_remote.txt`
-4. Connect Raspberry(to set wi-fi ssid and psw on Raspberry use `sudo raspi-config`) and Computer to the same network. 
+1. Connect Raspberry(to set wi-fi ssid and psw on Raspberry use `sudo raspi-config`) and Computer to the same network.
+2. Connect your computer to the Raspberry using `ssh pi@*.*.*.*` where `*.*.*.*` is the IP of the Raspberry
+3. Clone this repository on your computer
+4. Clone this repository on the Raspbery (ALREADY MADE)
+5. Move in the folder project in the Computer and `pip3 install -r requirements_remote.txt`
+6. Move in the folder project in the Raspberry and `pip3 install -r requirements_rpi.txt`(ALREADY MADE)
+7. On Raspberry `sudo apt-get install python3-opencv`(ALREADY MADE)
+8. On Raspberry run `python3 main.py`
 
 **CONTROL**
 
-4. Go on `src/utils/remotecontrol/remotecontroltransmitter.py` from you computer and change `self.serverIp  = '*.*.*.*'` by putting the address of the Raspberry instead of `*.*.*.*`
-5. `python3 -m bin.remotecontroltransmitter`
-6. Hope it worked or cry...
+8. In the **computer** go on `src/utils/remotecontrol/remotecontroltransmitter.py` from you computer and change `self.serverIp  = '*.*.*.*'` by putting the address of the Raspberry instead of `*.*.*.*`
+9. `python3 -m bin.remotecontroltransmitter`
+10. Hope it worked or cry...
 
 **CAMERA**
-
+8. Instal OpenCV on your Computer
+  -  Linux: `sudo apt-get install python3-opencv`
+  - ...Please add other ways for other operating system
+9. In the **Raspberry** gp on `src/utils/camerastreamer/camerastreamer.py` from you computer and change `self.serverIp  = '*.*.*.*'` by putting the address of the **computer** instead of `*.*.*.*`. You can edit the file simply with `nano`.
+10. On your computer `python3 -m bin.camerareceiver`
 
 
 
