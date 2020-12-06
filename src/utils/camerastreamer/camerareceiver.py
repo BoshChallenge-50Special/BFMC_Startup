@@ -43,17 +43,18 @@ from multiprocessing import Process,Event
 from src.utils.templates.workerprocess import WorkerProcess
 
 
+
 class CameraReceiver(WorkerProcess):
     # ===================================== INIT =========================================
     def __init__(self, inPs, outPs):
-        """Process used for debugging. It receives the images from the raspberry and 
+        """Process used for debugging. It receives the images from the raspberry and
         duplicates the perception pipline that is running on the raspberry.
 
         Parameters
         ----------
-        inPs : list(Pipe)  
+        inPs : list(Pipe)
             List of input pipes
-        outPs : list(Pipe) 
+        outPs : list(Pipe)
             List of output pipes
         """
         super(CameraReceiver,self).__init__(inPs, outPs)
@@ -62,16 +63,19 @@ class CameraReceiver(WorkerProcess):
         self.serverIp   =   '0.0.0.0'
 
         self.imgSize    = (480,640,3)
+
+        self.frame=0
+        self.save_images=False
     # ===================================== RUN ==========================================
     def run(self):
-        """Apply the initializers and start the threads. 
+        """Apply the initializers and start the threads.
         """
         self._init_socket()
         super(CameraReceiver,self).run()
 
     # ===================================== INIT SOCKET ==================================
     def _init_socket(self):
-        """Initialize the socket. 
+        """Initialize the socket.
         """
         self.server_socket = socket.socket()
         self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
@@ -90,7 +94,7 @@ class CameraReceiver(WorkerProcess):
     # ===================================== READ STREAM ==================================
     def _read_stream(self, outPs):
         """Read the image from input stream, decode it and show it.
-        
+
         Parameters
         ----------
         outPs : list(Pipe)
@@ -107,12 +111,19 @@ class CameraReceiver(WorkerProcess):
                 image = np.frombuffer(bts, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = np.reshape(image, self.imgSize)
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)#COLOR_RGB2BGR)
+
+                # ----------------------- Save images -------------------
+                if(self.save_images):
+                    cv2.imwrite('images/img_'+str(self.frame)+'.png',image)
+                    self.frame += 1
 
                 # ----------------------- show images -------------------
-                cv2.imshow('Image', image) 
+                cv2.imshow('Image', image)
                 cv2.waitKey(1)
+
         except:
+            print("except")
             pass
         finally:
             self.connection.close()
