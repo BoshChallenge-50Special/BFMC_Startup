@@ -26,38 +26,30 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import sys
-sys.path.insert(0,'.')
+import os
+import json
+import datetime
+from time import strftime
 
-"""ServerData class contains all parameter of server. It need to connect to the server.
-The parameters is updated by other class, like ServerListener and SubscribeToServer
-"""
-class ServerData:
+class DataSaver:
+    
+    def __init__(self):
 
-	def __init__(self, server_IP = None, beacon_port = 12345):
-		#: ip address of server 
-		self.__server_ip = server_IP 
-		#: flag to mark, that the server is new. It becomes false, when the client subscribed on the server.
-		self.is_new_server = False
-		#: port, where the beacon server send broadcast messages
-		self.__beacon_port = beacon_port
-		#: port, where the server listen the car clients
-		self.carSubscriptionPort = None
-		#: connection, which used to communicate with the server
-		self.socket = None
-
-	
-	@property
-	def beacon_port(self):
-		return self.__beacon_port
-
-	@property
-	def serverip(self):
-		return self.__server_ip
-
-	@serverip.setter
-	def serverip(self, server_ip):
-		if self.__server_ip != server_ip:
-			self.__server_ip = server_ip
-			self.is_new_server = False
-	
+        dirname = os.path.dirname(__file__)
+        fulltime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        self.filename = dirname + "/savings/" + fulltime + ".json"
+        self.data = {}
+        
+    def existing_car(self, carID):
+        if not self.data.has_key(carID):
+            self.data[carID] = []
+        
+    def ADDobstacle(self, carID, obstacleID, x, y):
+        self.existing_car(carID)
+        self.data[carID].append([obstacleID, x, y])
+    
+    def saving(self):
+        json_object = json.dumps(self.data, indent=4)
+        with open(self.filename, 'w') as f:
+            f.writelines(json_object)
+        

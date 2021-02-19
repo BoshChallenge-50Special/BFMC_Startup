@@ -70,20 +70,20 @@ class ServerListener:
 			#: Listen for server broadcast 
 			s.settimeout(1)
 			
-			while ((not self.__server_data.is_new_server) and self.__running):
+			while (not self.__server_data.is_new_server) and self.__running:
 				try:
 					# waiting for the beacon.
 					# Receive data from the socket. Buffer size = 1500 bytes
 					data, server_ip = s.recvfrom(1500, 0)
-					
+
 					# convert the received message
 					subscriptionPort = int(data.decode("utf-8"))
-	
+					
 					# actualize the parameter of server_data with new IP address and communication port
 					self.__server_data.serverip = server_ip[0]
 					self.__server_data.carSubscriptionPort = subscriptionPort
-					
-					self.__server_data.is_new_server = True
+					# server was found 
+					self.__server_data.is_new_server=True
 				except socket.timeout as e:
 					print("cannot find server")
 					# Cannot find the server. Need to repeat the process.

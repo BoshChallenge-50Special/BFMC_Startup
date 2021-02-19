@@ -28,58 +28,47 @@
 
 import sys
 sys.path.insert(0,'.')
-
-import socket
-import json
-from complexdecoder import ComplexDecoder
+from threading import Thread
+import time
 
 
-
-class PositionListener:
-	"""PositionListener aims to receive all message from the server. 
+class PositionListener(Thread):
+	"""PositionListener simulator aims to populate position variable. 
 	"""
-	def __init__(self,server_data):
-		
-		self.__server_data = server_data 
-		self.socket_pos = None
+	def __init__(self):
 
 		self.coor = None
 
 		self.__running = True
 
+		self.i=1
+		self.j=1
+
+		Thread.__init__(self) 
+
+    ## Method for starting position listener simulation process.
+    #  @param self          The object pointer.
+	def start(self):
+		self.__running = True
+
+		super(PositionListener,self).start()
+
+    ## Method for stopping position listener simulation process.
+    #  @param self          The object pointer.
 	def stop(self):
 		self.__running = False
-	
-	def listen(self):
+		
+    ## Method for running position listener simulation process.
+    #  @param self          The object pointer.
+	def run(self):
 		""" 
-		After the subscription on the server, it's listening the messages on the 
-		previously initialed socket. It decodes the messages and saves in 'coor'
-		member parameter. Each new messages will update this parameter. The server sends 
-		result (robot's coordination) of last detection. If the robot was detected by the localization 
-		system, the client will receive the same coordinate and timestamp. 
+		Update coordiantes every 0.1 seconds
 		"""
 		while self.__running:
-			if self.__server_data.socket != None: 
-				try:
-					msg = self.__server_data.socket.recv(4096)
+			# Generate some coordinates
+			self.i = self.i + 2
+			self.j = self.j + 3
+			self.coor = (complex(self.i,self.j),complex(self.i+5,self.j+5))
 
-					msg = msg.decode('utf-8')
-					if(msg == ''):
-						print('Invalid message. Connection can be interrupted.')
-						break
-					
-					coor = json.loads(msg)
-					self.coor = coor
-				except socket.timeout:
-					print("position listener socket_timeout")
-					# the socket was created successfully, but it wasn't received any message. Car with id wasn't detected before. 
-					pass
-				except Exception as e:
-					self.__server_data.socket.close()
-					self.__server_data.socket = None
-					print("Receiving position data from server " + str(self.__server_data.serverip) + " failed with error: " + str(e))
-					self.__server_data.serverip = None
-					break
-		self.__server_data.is_new_server = False
-		self.__server_data.socket = None
-		self.__server_data.serverip = None
+			# Wait for 0.1 s before next adv
+			time.sleep(0.1)

@@ -26,38 +26,50 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-import sys
-sys.path.insert(0,'.')
+from threading import Thread
+import socket
+import time
 
-"""ServerData class contains all parameter of server. It need to connect to the server.
-The parameters is updated by other class, like ServerListener and SubscribeToServer
-"""
-class ServerData:
+##
+class ServerBeaconThread(Thread):
+	""" This class implementing a thread with a broadcast functionality
+	Periodically sends broadcast signalling itself as the server
+	"""
+	def __init__(self,serverConfig,sleepDuration,logger):
+		Thread.__init__(self)
+		self.name='ServerBeaconThread'
+		self.sleepDuration = sleepDuration
+		
+		self.serverConfig = serverConfig
+		self.runningThread = True
+		self.logger = logger
 
-	def __init__(self, server_IP = None, beacon_port = 12345):
-		#: ip address of server 
-		self.__server_ip = server_IP 
-		#: flag to mark, that the server is new. It becomes false, when the client subscribed on the server.
-		self.is_new_server = False
-		#: port, where the beacon server send broadcast messages
-		self.__beacon_port = beacon_port
-		#: port, where the server listen the car clients
-		self.carSubscriptionPort = None
-		#: connection, which used to communicate with the server
-		self.socket = None
+	"""It aims to send a message on broadcast in each period. The message contains the port, where 
+	the clients can connect to the server. 
+	"""
+	def run(self):
+		try:
+			# Create and setup a socket for broadcasting the server data. 
+			beacon = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			beacon.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+			beacon.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			beacon.bind(('', self.serverConfig.negotiation_port))
+			
+			self.logger.info(self.name+' started')
+			
+			# Sending the message periodically
+			msg = bytes(str(self.serverConfig.carClientPort))
+			while self.runningThread:
+				beacon.sendto( msg , (self.serverConfig.broadcast_ip, self.serverConfig.negotiation_port))
+				time.sleep(self.sleepDuration)
+			# Close the connection
+			beacon.close()
 
-	
-	@property
-	def beacon_port(self):
-		return self.__beacon_port
-
-	@property
-	def serverip(self):
-		return self.__server_ip
-
-	@serverip.setter
-	def serverip(self, server_ip):
-		if self.__server_ip != server_ip:
-			self.__server_ip = server_ip
-			self.is_new_server = False
-	
+			self.logger.info(self.name+' stoped')
+		except Exception as e:
+			self.runningThread=False
+			self.logger.warning(self.name+' stoped with exception '+str(e))
+	## Stop thread.
+	#  @param self   The object pointer. 
+	def stop(self):
+		self.runningThread=False

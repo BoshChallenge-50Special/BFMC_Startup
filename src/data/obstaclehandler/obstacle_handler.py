@@ -30,31 +30,24 @@ import threading
 import server_data
 import server_listener
 import server_subscriber
-import position_listener
+import obstacle_streamer
 
 import time
+import random
 
-class GpsTracker(threading.Thread):
+class ObstacleHandler(threading.Thread):
     
     def __init__(self, ID):
-        """ GpsTracker targets to connect on the server and to receive the messages, which incorporates 
-        the coordinate of the robot on the race track. It has two main state, the setup state and the listening state. 
-        In the setup state, it creates the connection with server. It's receiving  the messages from the server in the listening
+        """ ObstacleHandler targets to connect on the server and to send messages, which incorporates 
+        the coordinate of the encountered obstacles on the race track. It has two main state, the setup state and the streaming state. 
+        In the setup state, it creates the connection with server. It's sending the messages to the server in the streaming
         state. 
 
-        It's a thread, so can be running parallel with other threads. You can access to the received parameters via 'coor' function.
-
-        Examples
-        --------
-        Here you can find a simple example, where the GpsTracker are running 10 second:
-            | gpstracker = GpsTracker()
-            | gpstracker.start()
-            | time.sleep(10)
-            | gpstracker.stop()
-            | gpstracker.join()
+        It's a thread, so can be run parallel with other threads. You can write the coordinates and the id of the encountered obstacle 
+        and the script will send it.
 
         """
-        super(GpsTracker, self).__init__()
+        super(ObstacleHandler, self).__init__()
         #: serverData object with server parameters
         self.__server_data = server_data.ServerData()
         #: discover the parameters of server
@@ -62,7 +55,7 @@ class GpsTracker(threading.Thread):
         #: connect to the server
         self.__subscriber = server_subscriber.ServerSubscriber(self.__server_data,ID)
         #: receive and decode the messages from the server
-        self.__position_listener = position_listener.PositionListener(self.__server_data)
+        self.__obstacle_streamer = obstacle_streamer.ObstacleStreamer(self.__server_data)
         
         self.__running = True
 
@@ -78,25 +71,21 @@ class GpsTracker(threading.Thread):
                 self.__subscriber.subscribe()
         
     
-    def listen(self):
+    def stream(self, obstacle_id, x, y):
         """ Listening the coordination of robot
         """
-        self.__position_listener.listen()
+        ob_id=obstacle_id
+        self.__obstacle_streamer.stream(ob_id, x, y)
 
-    def run(self):
-        while(self.__running):
-            self.setup()
-            self.listen()
-    
-    def coor(self):
-        """Access to the last receive coordinate
-        
-        Returns
-        -------
-        dictionary
-            coordinate and timestamp
-        """
-        return self.__position_listener.coor
+    def send(self, obstacle_id, x, y):
+        try:
+            self.__obstacle_streamer.sent = False
+            while self.__obstacle_streamer.sent == False and self.__running:
+                self.setup()
+                self.stream(obstacle_id, x, y)
+            return "sent: "
+        except:
+            return "not returned: "
 
     def ID(self):
         return self.__subscriber.ID()
@@ -106,21 +95,17 @@ class GpsTracker(threading.Thread):
         """
         self.__running = False
         self.__server_listener.stop()
-        self.__position_listener.stop()
+        self.__obstacle_streamer.stop()
 
 if __name__ == '__main__':
-    gpstracker = GpsTracker(4)
-    gpstracker.start()
-    
-    time.sleep(5)
-    while True:
+    obsthandler = ObstacleHandler(120)
+    obsthandler.start()
+    for x in range(1, 10):
         try:
-            coora = gpstracker.coor()
-            print(gpstracker.ID(), coora['timestamp'], coora['coor'][0], coora['coor'][0])
-            time.sleep(1)
-        except KeyboardInterrupt:
-            break
+            res = obsthandler.send(int(random.uniform(0,25)), random.uniform(0,15), random.uniform(0,15))
+            print(res)
+        except: pass
+        time.sleep(random.uniform(1,5))
+    obsthandler.stop()
 
-    gpstracker.stop()
-
-    gpstracker.join()
+    obsthandler.join()
